@@ -14,30 +14,28 @@ class FileSizes
     }
 }
 
-public class LogReader
+
+object LogReader
 {
 
-    fun main(args: Array<String>) : Unit
+    @JvmStatic
+    fun main(args: Array<String>)
     {
         val knownfiles = HashMap<String, FileSizes>();
 
         var firstrun = true;
 
-        while(true)
-        {
+        while (true) {
             Thread.sleep(100);
 
-            for ( arg in args)
-            {
-                for ( file in File(arg).listFiles())
-                {
+            for (arg in args) {
+                for (file in File(arg).listFiles()) {
                     val fname = file.getAbsolutePath();
 
                     if (!file.isFile())
                         continue;
 
-                    if (!knownfiles.containsKey(fname))
-                    {
+                    if (!knownfiles.containsKey(fname)) {
                         knownfiles.put(fname, FileSizes(!firstrun));
                     }
 
@@ -45,64 +43,52 @@ public class LogReader
 
                     var newsize = file.length();
 
-                    if (current.oldsize == newsize && current.nochgfor >50)
-                    {
+                    if (current.oldsize == newsize && current.nochgfor > 50) {
                         // nothing happened
                         current.nochgfor++;
                         continue;
                     }
 
-                    if(current.oldsize==newsize)
-                    {
-                        try
-                        {
+                    if (current.oldsize == newsize) {
+                        try {
                             val lengther = RandomAccessFile(file, "r");
                             val expnewsize = lengther.length();
 
                             newsize = expnewsize;
                             lengther.close();
-                        }
-                        catch ( p :Exception)
-                        {
+                        } catch (p: Exception) {
                             current.nochgfor = 1000;
                         }
                     }
 
-                    if(current.oldsize==newsize)
-                    {
+                    if (current.oldsize == newsize) {
                         // nothing happened
                         current.nochgfor++;
                         continue;
                     }
 
 
-                    current.nochgfor=0;
+                    current.nochgfor = 0;
 
-                    if(!firstrun)
-                    {
-                        try
-                        {
+                    if (!firstrun) {
+                        try {
                             // has changed but now stable
                             val rdr = RandomAccessFile(file, "r");
 
-                            try
-                            {
+                            try {
                                 rdr.seek(current.oldsize);
 
-                                val data = ByteArray((newsize - current.oldsize) as Int);
+                                val data = ByteArray((newsize - current.oldsize).toInt());
                                 rdr.read(data, 0, data.size);
 
                                 System.out.printf("%s:", fname);
 
-                                for ( b in data)
-                                    System.out.print(b as Char);
-                            }
-                            finally
-                            {
+                                for (b in data)
+                                    System.out.print(b.toChar());
+                            } finally {
                                 rdr.close();
                             }
-                        } catch (ex: Exception)
-                        {
+                        } catch (ex: Exception) {
                             System.out.printf("Cant Read: %s\n", fname);
                         }
                     }
